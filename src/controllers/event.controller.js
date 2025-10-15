@@ -111,12 +111,10 @@ const cancelRegistration = async (req, res) => {
   try {
     const { eventId, userId } = req.body;
 
-    
     if (!eventId || !userId) {
       return res.status(400).json({ error: "eventId and userId are required" });
     }
 
-    
     const event = await prisma.event.findUnique({
       where: { id: parseInt(eventId) },
       include: { registrations: true },
@@ -126,7 +124,6 @@ const cancelRegistration = async (req, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    
     const isRegistered = event.registrations.some(
       (user) => user.id === parseInt(userId)
     );
@@ -137,7 +134,6 @@ const cancelRegistration = async (req, res) => {
         .json({ error: "User is not registered for this event" });
     }
 
-    
     await prisma.event.update({
       where: { id: parseInt(eventId) },
       data: {
@@ -156,9 +152,39 @@ const cancelRegistration = async (req, res) => {
   }
 };
 
+const getUpcomingEvents = async (req, res) => {
+  try {
+    const now = new Date();
+
+    const events = await prisma.event.findMany({
+      where: {
+        date: {
+          gt: now, // only upcoming events
+        },
+      },
+      include: {
+        registrations: true,
+      },
+    });
+
+    const sortedEvents = events.sort((a, b) => {
+      const dateComparison = new Date(a.date) - new Date(b.date);
+      if (dateComparison !== 0) return dateComparison;
+      return a.location.localeCompare(b.location);
+    });
+
+ 
+    return res.status(200).json(sortedEvents);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createEvent,
   getEvent,
   registerEvent,
-  cancelRegistration
+  cancelRegistration,
+  getUpcomingEvents
 };
