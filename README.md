@@ -1,6 +1,6 @@
 # Event Management API
 
-Small Express + Prisma API for creating events and managing user registrations.
+API for creating events and managing user registrations.
 
 ## Quick info
 
