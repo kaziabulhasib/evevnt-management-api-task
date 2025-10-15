@@ -61,7 +61,6 @@ const registerEvent = async (req, res) => {
   try {
     const { eventId, userId } = req.body;
 
-   
     if (!eventId || !userId) {
       return res.status(400).json({ error: "eventId and userId are required" });
     }
@@ -75,12 +74,10 @@ const registerEvent = async (req, res) => {
       return res.status(404).json({ error: "Event not found" });
     }
 
-
     if (new Date(event.date) < new Date()) {
       return res.status(400).json({ error: "Cannot register for past events" });
     }
 
-    
     if (event.registrations.length >= event.capacity) {
       return res.status(400).json({ error: "Event is full" });
     }
@@ -110,8 +107,58 @@ const registerEvent = async (req, res) => {
   }
 };
 
+const cancelRegistration = async (req, res) => {
+  try {
+    const { eventId, userId } = req.body;
+
+    
+    if (!eventId || !userId) {
+      return res.status(400).json({ error: "eventId and userId are required" });
+    }
+
+    
+    const event = await prisma.event.findUnique({
+      where: { id: parseInt(eventId) },
+      include: { registrations: true },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    
+    const isRegistered = event.registrations.some(
+      (user) => user.id === parseInt(userId)
+    );
+
+    if (!isRegistered) {
+      return res
+        .status(400)
+        .json({ error: "User is not registered for this event" });
+    }
+
+    
+    await prisma.event.update({
+      where: { id: parseInt(eventId) },
+      data: {
+        registrations: {
+          disconnect: { id: parseInt(userId) },
+        },
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Registration cancelled successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createEvent,
   getEvent,
   registerEvent,
+  cancelRegistration
 };
