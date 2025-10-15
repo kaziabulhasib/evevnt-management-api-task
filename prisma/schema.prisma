@@ -7,7 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Test {
-  id String @id @default(cuid())
-  name String
+model User {
+  id             Int       @id @default(autoincrement())
+  name           String
+  email          String    @unique
+  registrations  Event[]   @relation("UserRegistrations")
 }
+
+model Event {
+  id             Int       @id @default(autoincrement())
+  title          String
+  date           DateTime
+  location       String
+  capacity       Int
+  registrations  User[]    @relation("UserRegistrations")
+}
+
