@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const { get } = require("../routes/event.routes");
 
 const createEvent = async (req, res) => {
   try {
@@ -32,6 +33,32 @@ const createEvent = async (req, res) => {
   }
 };
 
+const getEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+
+    const event = await prisma.event.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        registrations: {
+          select: { id: true, name: true, email: true }, 
+        },
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    return res.status(200).json(event);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   createEvent,
+  getEvent,
 };
