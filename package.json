@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "docker-compose up -d &&  nodemon src/server.js"
+    "dev": "docker-compose up -d &&  nodemon src/server.js",
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",
