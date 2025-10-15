@@ -13,7 +13,7 @@ app.use(express.json());
 
 // routes
 
-app.use("/event", eventRoutes);
+app.use("/events", eventRoutes);
 
 app.get("/", (req, res) => {
   res.send("event api running ........");
