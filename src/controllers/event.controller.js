@@ -1,5 +1,5 @@
 const prisma = require("../config/db");
-const { get } = require("../routes/event.routes");
+
 
 const createEvent = async (req, res) => {
   try {
@@ -173,11 +173,43 @@ const getUpcomingEvents = async (req, res) => {
       return a.location.localeCompare(b.location);
     });
 
- 
     return res.status(200).json(sortedEvents);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+const getEventStats = async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id);
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: { registrations: true },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    const totalRegistrations = event.registrations.length;
+    const remainingCapacity = event.capacity - totalRegistrations;
+    const capacityUsedPercentage = (
+      (totalRegistrations / event.capacity) *
+      100
+    ).toFixed(2);
+
+    res.json({
+      eventId: event.id,
+      title: event.title,
+      totalRegistrations,
+      remainingCapacity,
+      capacityUsedPercentage: `${capacityUsedPercentage}%`,
+    });
+  } catch (error) {
+    console.error("Error fetching event stats:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -186,5 +218,6 @@ module.exports = {
   getEvent,
   registerEvent,
   cancelRegistration,
-  getUpcomingEvents
+  getUpcomingEvents,
+  getEventStats,
 };
