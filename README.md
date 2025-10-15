@@ -96,14 +96,4 @@ Base path: `/events`
 - GET /events/:id
   - Get event details (includes registration list)
 
-## Notes / tips
 
-- package.json contains scripts:
-  - `dev` — runs docker-compose up -d then `nodemon src/server.js`
-  - `seed` — runs `node prisma/seed.js`
-- If you change Prisma models, run:
-
-```bash
-npx prisma migrate dev
-npx prisma generate
-```
